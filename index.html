@@ -316,8 +316,10 @@
   .share-btn-icon {
     width: 34px; height: 34px; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; font-size: 18px;
+    flex-shrink: 0;
+    overflow: hidden;
   }
+  .share-btn-icon img { width: 34px; height: 34px; border-radius: 9px; object-fit: cover; }
   .share-btn-label { font-size: 13px; font-weight: 500; }
 
   .share-section-label {
@@ -505,27 +507,45 @@
   <div class="share-section-label">Share to</div>
   <div class="share-grid" id="share-grid">
     <div class="share-btn" data-app="whatsapp">
-      <div class="share-btn-icon" style="background:#e8f8ef">📱</div>
+      <div class="share-btn-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+      </div>
       <div class="share-btn-label">WhatsApp</div>
     </div>
     <div class="share-btn" data-app="telegram">
-      <div class="share-btn-icon" style="background:#e8f3fd">✈️</div>
+      <div class="share-btn-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+      </div>
       <div class="share-btn-label">Telegram</div>
     </div>
     <div class="share-btn" data-app="messenger">
-      <div class="share-btn-icon" style="background:#eef0fe">💬</div>
+      <div class="share-btn-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Facebook_Messenger_logo_2020.svg" alt="Messenger">
+      </div>
       <div class="share-btn-label">Messenger</div>
     </div>
     <div class="share-btn" data-app="instagram">
-      <div class="share-btn-icon" style="background:#fdf0f8">📸</div>
+      <div class="share-btn-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
+      </div>
       <div class="share-btn-label">Instagram</div>
     </div>
+    <div class="share-btn" data-app="maps">
+      <div class="share-btn-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" alt="Google Maps">
+      </div>
+      <div class="share-btn-label">Google Maps</div>
+    </div>
     <div class="share-btn" data-app="sms">
-      <div class="share-btn-icon" style="background:#f0f8e8">💬</div>
+      <div class="share-btn-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IMessage_logo.svg" alt="Messages">
+      </div>
       <div class="share-btn-label">Messages</div>
     </div>
     <div class="share-btn" data-app="email">
-      <div class="share-btn-icon" style="background:#f8f0e8">📧</div>
+      <div class="share-btn-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" alt="Email">
+      </div>
       <div class="share-btn-label">Email</div>
     </div>
   </div>
@@ -750,7 +770,7 @@ async function nativeShare() {
   const file = new File([capturedBlob], `locsnap_${Date.now()}.jpg`, { type: 'image/jpeg' });
   const loc = locationData;
   const text = loc
-    ? `📍 ${loc.addr}\n🌐 ${loc.lat.toFixed(6)}, ${loc.lon.toFixed(6)}\n🕐 ${loc.timeStr}`
+    ? `📍 ${loc.addr}\n🌐 ${loc.lat.toFixed(6)}, ${loc.lon.toFixed(6)}\n🗺️ https://www.google.com/maps?q=${loc.lat},${loc.lon}\n🕐 ${loc.timeStr}`
     : `📸 Photo taken at ${new Date().toLocaleString()}`;
   try {
     await navigator.share({ files: [file], title: 'LocSnap Photo', text });
@@ -765,7 +785,7 @@ document.querySelectorAll('.share-btn').forEach(btn => {
     const app = btn.dataset.app;
     const loc = locationData;
     const text = encodeURIComponent(loc
-      ? `📍 ${loc.addr}\n🌐 ${loc.lat.toFixed(6)}, ${loc.lon.toFixed(6)}\n🕐 ${loc.timeStr}`
+      ? `📍 ${loc.addr}\n🌐 ${loc.lat.toFixed(6)}, ${loc.lon.toFixed(6)}\n🗺️ https://www.google.com/maps?q=${loc.lat},${loc.lon}\n🕐 ${loc.timeStr}`
       : `📸 Photo from LocSnap – ${new Date().toLocaleString()}`);
 
     // Try Web Share API first (passes the actual image)
@@ -777,6 +797,17 @@ document.querySelectorAll('.share-btn').forEach(btn => {
       } catch(e) {
         if (e.name === 'AbortError') return;
       }
+    }
+
+    // Google Maps — open location directly
+    if (app === 'maps') {
+      const loc = locationData;
+      if (loc) {
+        window.open(`https://www.google.com/maps?q=${loc.lat},${loc.lon}`, '_blank');
+      } else {
+        showStatus('GPS not available yet.', true);
+      }
+      return;
     }
 
     // Fallback deep links (text only on desktop)
