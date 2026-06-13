@@ -770,7 +770,7 @@ async function nativeShare() {
   const file = new File([capturedBlob], `locsnap_${Date.now()}.jpg`, { type: 'image/jpeg' });
   const loc = locationData;
   const text = loc
-    ? `📍 ${loc.addr}\n🌐 ${loc.lat.toFixed(6)}, ${loc.lon.toFixed(6)}\n🗺️ https://www.google.com/maps?q=${loc.lat},${loc.lon}\n🕐 ${loc.timeStr}`
+    ? `📍 ${loc.addr}\n🗺️ https://www.google.com/maps?q=${loc.lat},${loc.lon}\n🕐 ${loc.timeStr}`
     : `📸 Photo taken at ${new Date().toLocaleString()}`;
   try {
     await navigator.share({ files: [file], title: 'LocSnap Photo', text });
@@ -785,7 +785,7 @@ document.querySelectorAll('.share-btn').forEach(btn => {
     const app = btn.dataset.app;
     const loc = locationData;
     const text = encodeURIComponent(loc
-      ? `📍 ${loc.addr}\n🌐 ${loc.lat.toFixed(6)}, ${loc.lon.toFixed(6)}\n🗺️ https://www.google.com/maps?q=${loc.lat},${loc.lon}\n🕐 ${loc.timeStr}`
+      ? `📍 ${loc.addr}\n🗺️ https://www.google.com/maps?q=${loc.lat},${loc.lon}\n🕐 ${loc.timeStr}`
       : `📸 Photo from LocSnap – ${new Date().toLocaleString()}`);
 
     // Try Web Share API first (passes the actual image)
