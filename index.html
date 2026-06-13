@@ -503,7 +503,7 @@
   <div class="share-grid" id="share-grid">
     <div class="share-btn" data-app="whatsapp">
       <div class="share-btn-icon">
-        <img src="https://www.google.com/imgres?q=whatsapp%20png&imgurl=https%3A%2F%2Fpng.pngtree.com%2Felement_our%2Fsm%2F20180626%2Fsm_5b321c98efaa6.jpg&imgrefurl=https%3A%2F%2Fpngtree.com%2Fso%2Fwhatsapp&docid=ibzPVFtOp-S7QM&tbnid=csb5KzjicPnC9M&vet=12ahUKEwjli6ShgoSVAxVywzgGHThPM2sQnPAOegQIFBAB..i&w=360&h=360&hcb=2&ved=2ahUKEwjli6ShgoSVAxVywzgGHThPM2sQnPAOegQIFBAB" alt="WhatsApp">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
       </div>
       <div class="share-btn-label">WhatsApp</div>
     </div>
@@ -778,24 +778,13 @@ document.querySelectorAll('.share-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
     const app = btn.dataset.app;
     const loc = locationData;
-    const text = encodeURIComponent(loc
+    const shareText = loc
       ? `📍 ${loc.addr}\n🗺️ https://www.google.com/maps?q=${loc.lat},${loc.lon}\n🕐 ${loc.timeStr}`
-      : `📸 Photo from LocSnap – ${new Date().toLocaleString()}`);
-
-    // Try Web Share API first (passes the actual image)
-    if (navigator.share && capturedBlob) {
-      const file = new File([capturedBlob], `locsnap_${Date.now()}.jpg`, { type: 'image/jpeg' });
-      try {
-        await navigator.share({ files: [file], title: 'LocSnap', text: decodeURIComponent(text) });
-        return;
-      } catch(e) {
-        if (e.name === 'AbortError') return;
-      }
-    }
+      : `📸 Photo from LocSnap – ${new Date().toLocaleString()}`;
+    const encoded = encodeURIComponent(shareText);
 
     // Google Maps — open location directly
     if (app === 'maps') {
-      const loc = locationData;
       if (loc) {
         window.open(`https://www.google.com/maps?q=${loc.lat},${loc.lon}`, '_blank');
       } else {
@@ -804,17 +793,47 @@ document.querySelectorAll('.share-btn').forEach(btn => {
       return;
     }
 
-    // Fallback deep links (text only on desktop)
-    const urls = {
-      whatsapp:   `https://wa.me/?text=${text}`,
-      telegram:   `https://t.me/share/url?url=locsnap&text=${text}`,
-      messenger:  `fb-messenger://share?link=locsnap&app_id=123456`,
-      instagram:  `instagram://`,
-      sms:        `sms:?body=${text}`,
-      email:      `mailto:?subject=LocSnap%20Photo&body=${text}`
+    // Auto-save photo to device first so user can attach it in the app
+    if (capturedBlob) {
+      const url = URL.createObjectURL(capturedBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `locsnap_${Date.now()}.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Direct deep links (opens app directly)
+    const deepLinks = {
+      whatsapp:  `whatsapp://send?text=${encoded}`,
+      telegram:  `tg://msg?text=${encoded}`,
+      messenger: `fb-messenger://share`,
+      instagram: `instagram://`,
+      sms:       `sms:?body=${encoded}`,
+      email:     `mailto:?subject=LocSnap%20Photo&body=${encoded}`
     };
-    if (urls[app]) window.open(urls[app], '_blank');
-    showStatus('Opening ' + btn.querySelector('.share-btn-label').textContent + '…', false, 2000);
+
+    // Web fallbacks if app not installed
+    const webLinks = {
+      whatsapp:  `https://wa.me/?text=${encoded}`,
+      telegram:  `https://t.me/share/url?text=${encoded}`,
+      messenger: `https://www.messenger.com/`,
+      instagram: `https://www.instagram.com/`,
+      sms:       `sms:?body=${encoded}`,
+      email:     `mailto:?subject=LocSnap%20Photo&body=${encoded}`
+    };
+
+    showStatus('📸 Photo saved to gallery! Opening app…', false, 3000);
+
+    // Try deep link — if app is installed it opens immediately
+    window.location.href = deepLinks[app];
+
+    // If app didn't open after 1.5s, open web fallback
+    setTimeout(() => {
+      if (document.visibilityState !== 'hidden') {
+        window.open(webLinks[app], '_blank');
+      }
+    }, 1500);
   });
 });
 </script>
