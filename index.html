@@ -473,23 +473,18 @@
   <div class="preview-meta" id="meta-panel">
     <div class="meta-row">
       <div class="meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-      <div class="meta-key">Lat</div>
-      <div class="meta-val" id="meta-lat">—</div>
+      <div class="meta-key">Address</div>
+      <div class="meta-val" id="meta-addr">—</div>
     </div>
     <div class="meta-row">
       <div class="meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-      <div class="meta-key">Long</div>
-      <div class="meta-val" id="meta-lon">—</div>
+      <div class="meta-key">Maps</div>
+      <div class="meta-val" id="meta-maps" style="color:#00e5a0;word-break:break-all;">—</div>
     </div>
     <div class="meta-row">
       <div class="meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
       <div class="meta-key">Time</div>
       <div class="meta-val" id="meta-time">—</div>
-    </div>
-    <div class="meta-row">
-      <div class="meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-      <div class="meta-key">Address</div>
-      <div class="meta-val" id="meta-addr">—</div>
     </div>
   </div>
 
@@ -665,9 +660,8 @@ async function capturePhoto() {
 
   // Update meta panel
   if (locationData) {
-    document.getElementById('meta-lat').textContent = locationData.lat.toFixed(6) + '°';
-    document.getElementById('meta-lon').textContent = locationData.lon.toFixed(6) + '°';
     document.getElementById('meta-addr').textContent = locationData.addr;
+    document.getElementById('meta-maps').textContent = `maps.google.com?q=${locationData.lat.toFixed(5)},${locationData.lon.toFixed(5)}`;
   }
   document.getElementById('meta-time').textContent = new Date().toLocaleString();
 
@@ -681,8 +675,8 @@ function drawStamp(ctx, w, h) {
   const loc = locationData;
   const now = new Date();
   const lines = [
-    loc ? `${loc.lat.toFixed(6)}°N  ${loc.lon.toFixed(6)}°E` : 'GPS unavailable',
-    loc ? loc.addr : '',
+    loc ? loc.addr : 'GPS unavailable',
+    loc ? `maps.google.com?q=${loc.lat.toFixed(5)},${loc.lon.toFixed(5)}` : '',
     now.toLocaleString()
   ].filter(Boolean);
 
